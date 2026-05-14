@@ -472,12 +472,12 @@ class Transformer(nn.Module):
 
     def __init__(
         self,
-        src_vocab_size: int = 8000,
-        tgt_vocab_size: int = 8000,
-        d_model:   int   = 512,
-        N:         int   = 6,
+        src_vocab_size: int = 7853,
+        tgt_vocab_size: int = 5893,
+        d_model:   int   = 256,
+        N:         int   = 3,
         num_heads: int   = 8,
-        d_ff:      int   = 2048,
+        d_ff:      int   = 512,
         dropout:   float = 0.1,
         checkpoint_path: str = None,
         src_vocab: dict  = None,
