@@ -22,14 +22,13 @@ from typing import Optional, Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import spacy
-SPACY_DE = spacy.load("de_core_news_sm")
-SPACY_EN = spacy.load("en_core_news_sm")
+
+
 # ══════════════════════════════════════════════════════════════════════
 #  STANDALONE ATTENTION FUNCTION
 #  Exposed at module level so the autograder can import and test it
 #  independently of MultiHeadAttention.
-# ════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════
 
 def scaled_dot_product_attention(
     Q: torch.Tensor,
@@ -477,9 +476,9 @@ class Transformer(nn.Module):
         num_heads: int   = 8,
         d_ff:      int   = 2048,
         dropout:   float = 0.1,
-        checkpoint_path: str = "best_model.pth",
-        src_vocab  = None,
-        tgt_vocab = None,
+        checkpoint_path: str = None,
+        src_vocab: dict  = None,
+        tgt_vocab: dict  = None,
         src_tokenizer    = None,
     ) -> None:
         super().__init__()
@@ -505,24 +504,16 @@ class Transformer(nn.Module):
         # Vocab / tokenizer references (needed for .infer())
         self.src_vocab      = src_vocab
         self.tgt_vocab      = tgt_vocab
-        self.src_tokenizer  = src_tokenizer or SPACY_DE.tokenizer
+        self.src_tokenizer  = src_tokenizer
 
         # Weight initialisation (Xavier uniform, as in the paper)
         self._init_weights()
 
         # Optionally load checkpoint
-        # if checkpoint_path is not None:
-        #     state = torch.load(checkpoint_path, map_location="cpu")
-        #     self.load_state_dict(state)
-        if checkpoint_path is None:
-            checkpoint_path = "checkpoints/best_model.pt"
-
-        if os.path.exists(checkpoint_path):
+        if checkpoint_path is not None:
             state = torch.load(checkpoint_path, map_location="cpu")
-            self.load_state_dict(state["model_state"] if "model_state" in state else state)
-            self.src_vocab = state.get("src_vocab", self.src_vocab)
-            self.tgt_vocab = state.get("tgt_vocab", self.tgt_vocab)
-            print(f"✓ Loaded model weights from {checkpoint_path}")
+            self.load_state_dict(state)
+
     # ── weight init ────────────────────────────────────────────────────
     def _init_weights(self) -> None:
         for p in self.parameters():
@@ -609,8 +600,6 @@ class Transformer(nn.Module):
         Returns:
             The fully translated English string, detokenised and clean.
         """
-        if device is None:
-            device = next(self.parameters()).device
         assert self.src_vocab is not None, "src_vocab must be set for inference"
         assert self.tgt_vocab is not None, "tgt_vocab must be set for inference"
         assert self.src_tokenizer is not None, "src_tokenizer must be set for inference"

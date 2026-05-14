@@ -377,15 +377,7 @@ def train(args):
         # Save best checkpoint
         if val_loss < best_val_loss:
             best_val_loss = val_loss
-            # torch.save(model.state_dict(), args.checkpoint)
-            torch.save(
-                {
-                    "model_state": model.state_dict(),
-                    "src_vocab": train_ds.src_vocab,
-                    "tgt_vocab": train_ds.tgt_vocab,
-                },
-                args.checkpoint,
-            )
+            torch.save(model.state_dict(), args.checkpoint)
             print(f"  ✓ New best model saved → {args.checkpoint}")
             wandb.run.summary["best_val_loss"] = best_val_loss
             wandb.run.summary["best_epoch"]    = epoch
