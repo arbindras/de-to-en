@@ -151,7 +151,6 @@ def evaluate_bleu(
         BLEU score in [0, 100].
     """
     import sacrebleu
-
     inv_vocab = {v: k for k, v in tgt_vocab.items()}
     model.eval()
 
@@ -183,7 +182,7 @@ def evaluate_bleu(
     bleu = sacrebleu.corpus_bleu(
     predictions,
     list(zip(*references))
-    )   
+    )
 
     return bleu.score
 
@@ -458,5 +457,5 @@ if __name__ == "__main__":
     parser.add_argument("--run_name",      type=str, default=None,
                         help="W&B run name (auto-generated if None)")
 
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
     train(args)
