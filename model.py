@@ -469,8 +469,8 @@ class Transformer(nn.Module):
 
     def __init__(
         self,
-        src_vocab_size: int,
-        tgt_vocab_size: int,
+        src_vocab_size: int = 8000,
+        tgt_vocab_size: int = 8000,
         d_model:   int   = 512,
         N:         int   = 6,
         num_heads: int   = 8,
@@ -510,9 +510,24 @@ class Transformer(nn.Module):
         self._init_weights()
 
         # Optionally load checkpoint
-        if checkpoint_path is not None:
+        # if checkpoint_path is not None:
+        #     state = torch.load(checkpoint_path, map_location="cpu")
+        #     self.load_state_dict(state)
+        if checkpoint_path is None:
+            checkpoint_path = "checkpoints/best_model.pt"
+
+        if os.path.exists(checkpoint_path):
             state = torch.load(checkpoint_path, map_location="cpu")
-            self.load_state_dict(state)
+
+            # load weights
+            if "model_state" in state:
+                self.load_state_dict(state["model_state"])
+            else:
+                self.load_state_dict(state)
+
+            # load vocabs if present
+            self.src_vocab = state.get("src_vocab")
+            self.tgt_vocab = state.get("tgt_vocab")
 
     # ── weight init ────────────────────────────────────────────────────
     def _init_weights(self) -> None:
@@ -585,6 +600,8 @@ class Transformer(nn.Module):
         """
         memory = self.encode(src, src_mask)
         return self.decode(memory, src_mask, tgt, tgt_mask)
+
+
 
     def infer(self, src_sentence: str, max_len: int = 50, device: str = "cpu") -> str:
         """
