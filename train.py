@@ -150,8 +150,7 @@ def evaluate_bleu(
     Returns:
         BLEU score in [0, 100].
     """
-    from evaluate import load as hf_load
-    bleu_metric = hf_load("bleu")
+    import sacrebleu
 
     inv_vocab = {v: k for k, v in tgt_vocab.items()}
     model.eval()
@@ -181,8 +180,12 @@ def evaluate_bleu(
                 toks = toks[: toks.index("<eos>")]
             references.append([" ".join(toks)])
 
-    result = bleu_metric.compute(predictions=predictions, references=references)
-    return result["bleu"] * 100.0
+    bleu = sacrebleu.corpus_bleu(
+    predictions,
+    list(zip(*references))
+    )   
+
+    return bleu.score
 
 
 # ══════════════════════════════════════════════════════════════════════
