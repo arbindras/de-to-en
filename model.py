@@ -26,8 +26,7 @@ import torch.nn.functional as F
 import gdown
 import spacy
 
-# global tokenizer
-SPACY_DE = spacy.load("de_core_news_sm")
+
 # ══════════════════════════════════════════════════════════════════════
 #  STANDALONE ATTENTION FUNCTION
 #  Exposed at module level so the autograder can import and test it
@@ -491,7 +490,12 @@ class Transformer(nn.Module):
         # ------------------------------------------------------------
         # Default tokenizer
         # ------------------------------------------------------------
-        self.src_tokenizer = SPACY_DE.tokenizer
+        self.src_tokenizer = None
+
+        try:
+            self.src_tokenizer = spacy.load("de_core_news_sm").tokenizer
+        except Exception:
+            self.src_tokenizer = None
 
 
         # ------------------------------------------------------------
@@ -639,7 +643,12 @@ class Transformer(nn.Module):
         
         assert self.src_vocab is not None, "src_vocab must be set for inference"
         assert self.tgt_vocab is not None, "tgt_vocab must be set for inference"
-        assert self.src_tokenizer is not None, "src_tokenizer must be set for inference"
+        # assert self.src_tokenizer is not None, "src_tokenizer must be set for inference"
+
+        if self.src_tokenizer is not None:
+            tokens = [tok.text.lower() for tok in self.src_tokenizer(src_sentence)]
+        else:
+            tokens = src_sentence.lower().split()
 
         self.eval()
         with torch.no_grad():
