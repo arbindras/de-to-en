@@ -7,3 +7,5 @@ datasets
 spacy
 evaluate
 tqdm
+gdown
+sacrebleu

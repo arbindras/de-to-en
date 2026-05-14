@@ -23,7 +23,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+import gdown
+import spacy
 
+# global tokenizer
+SPACY_DE = spacy.load("de_core_news_sm")
 # ══════════════════════════════════════════════════════════════════════
 #  STANDALONE ATTENTION FUNCTION
 #  Exposed at module level so the autograder can import and test it
@@ -484,6 +488,27 @@ class Transformer(nn.Module):
         super().__init__()
         self.d_model = d_model
 
+        # ------------------------------------------------------------
+        # Default tokenizer
+        # ------------------------------------------------------------
+        self.src_tokenizer = SPACY_DE.tokenizer
+
+
+        # ------------------------------------------------------------
+        # Auto-download checkpoint from Google Drive
+        # ------------------------------------------------------------
+        if checkpoint_path is None:
+            checkpoint_path = "best_model.pth"
+
+        if not os.path.exists(checkpoint_path):
+
+            FILE_ID = "1xKtXLc7CLpOaPVPurlce-xeajvIIUegh"
+
+            url = f"https://drive.google.com/uc?id={FILE_ID}"
+
+            gdown.download(url, checkpoint_path, quiet=False)
+
+
         # Embeddings
         self.src_embed = nn.Embedding(src_vocab_size, d_model, padding_idx=1)
         self.tgt_embed = nn.Embedding(tgt_vocab_size, d_model, padding_idx=1)
@@ -509,10 +534,20 @@ class Transformer(nn.Module):
         # Weight initialisation (Xavier uniform, as in the paper)
         self._init_weights()
 
-        # Optionally load checkpoint
-        if checkpoint_path is not None:
-            state = torch.load(checkpoint_path, map_location="cpu")
+        # ------------------------------------------------------------
+        # Load checkpoint
+        # ------------------------------------------------------------
+        state = torch.load(checkpoint_path, map_location="cpu")
+
+        # load weights
+        if "model_state" in state:
+            self.load_state_dict(state["model_state"])
+        else:
             self.load_state_dict(state)
+
+        # load vocabs
+        self.src_vocab = state["src_vocab"]
+        self.tgt_vocab = state["tgt_vocab"]
 
     # ── weight init ────────────────────────────────────────────────────
     def _init_weights(self) -> None:
@@ -587,8 +622,7 @@ class Transformer(nn.Module):
         return self.decode(memory, src_mask, tgt, tgt_mask)
 
 
-
-    def infer(self, src_sentence: str, max_len: int = 50, device: str = "cpu") -> str:
+    def infer(self, src_sentence: str, max_len: int = 50, device= None) -> str:
         """
         Translates a German sentence to English using greedy autoregressive decoding.
 
@@ -600,6 +634,9 @@ class Transformer(nn.Module):
         Returns:
             The fully translated English string, detokenised and clean.
         """
+        if device is None:
+            device = next(self.parameters()).device
+        
         assert self.src_vocab is not None, "src_vocab must be set for inference"
         assert self.tgt_vocab is not None, "tgt_vocab must be set for inference"
         assert self.src_tokenizer is not None, "src_tokenizer must be set for inference"
