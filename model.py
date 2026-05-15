@@ -17,7 +17,10 @@ AUTOGRADER CONTRACT (DO NOT MODIFY SIGNATURES):
 import math
 import copy
 import os
+import re
 from typing import Optional, Tuple
+
+from sympy import re
 
 import torch
 import torch.nn as nn
@@ -648,7 +651,7 @@ class Transformer(nn.Module):
         if self.src_tokenizer is not None:
             tokens = [tok.text.lower() for tok in self.src_tokenizer(src_sentence)]
         else:
-            tokens = src_sentence.lower().split()
+            tokens = re.findall(r"\w+|[^\w\s]", src_sentence.lower())
 
         self.eval()
         with torch.no_grad():
@@ -657,7 +660,7 @@ class Transformer(nn.Module):
             if self.src_tokenizer is not None:
                 tokens = [tok.text.lower() for tok in self.src_tokenizer(src_sentence)]
             else:
-                tokens = src_sentence.lower().split()
+                tokens = re.findall(r"\w+|[^\w\s]", src_sentence.lower())
 
             pad_idx = self.src_vocab.get("<pad>", 1)
             sos_idx = self.src_vocab["<sos>"]
