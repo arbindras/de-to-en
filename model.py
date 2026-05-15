@@ -25,7 +25,7 @@ import torch.nn.functional as F
 
 import gdown
 import spacy
-
+from typing import Optional
 
 # ══════════════════════════════════════════════════════════════════════
 #  STANDALONE ATTENTION FUNCTION
@@ -479,10 +479,10 @@ class Transformer(nn.Module):
         num_heads: int   = 8,
         d_ff:      int   = 512,
         dropout:   float = 0.1,
-        checkpoint_path: str = None,
-        src_vocab: dict  = None,
-        tgt_vocab: dict  = None,
-        src_tokenizer    = None,
+        checkpoint_path: Optional[str] = None,
+        src_vocab: Optional[dict] = None,
+        tgt_vocab: Optional[dict] = None,
+        src_tokenizer = None,
     ) -> None:
         super().__init__()
         self.d_model = d_model
@@ -653,7 +653,11 @@ class Transformer(nn.Module):
         self.eval()
         with torch.no_grad():
             # Tokenise source
-            tokens = [tok.text.lower() for tok in self.src_tokenizer(src_sentence)]
+            # tokens = [tok.text.lower() for tok in self.src_tokenizer(src_sentence)]
+            if self.src_tokenizer is not None:
+                tokens = [tok.text.lower() for tok in self.src_tokenizer(src_sentence)]
+            else:
+                tokens = src_sentence.lower().split()
 
             pad_idx = self.src_vocab.get("<pad>", 1)
             sos_idx = self.src_vocab["<sos>"]
@@ -690,4 +694,12 @@ class Transformer(nn.Module):
             if "<eos>" in out_tokens:
                 out_tokens = out_tokens[: out_tokens.index("<eos>")]
 
-            return " ".join(out_tokens)
+            sentence = " ".join(tokens)
+
+        sentence = sentence.replace(" .", ".")
+        sentence = sentence.replace(" ,", ",")
+        sentence = sentence.replace(" !", "!")
+        sentence = sentence.replace(" ?", "?")
+        sentence = sentence.replace(" n't", "n't")
+
+        return sentence

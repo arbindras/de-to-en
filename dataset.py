@@ -12,6 +12,7 @@ from collections import Counter
 from datasets import load_dataset
 import spacy
 
+from typing import Optional
 
 # ──────────────────────────────────────────────────────────────────────
 # Helper: load spaCy models (download if missing)
@@ -123,8 +124,8 @@ class Multi30kDataset(Dataset):
     def build_vocab(
         self,
         min_freq: int = 2,
-        src_vocab: dict = None,
-        tgt_vocab: dict = None,
+        src_vocab: Optional[dict] = None,
+        tgt_vocab: Optional[dict] = None,
     ) -> None:
         """
         Builds (or receives) the vocabulary mappings for source (de) and

@@ -404,7 +404,7 @@ def train(args):
 
     test_bleu = evaluate_bleu(
         model, test_loader,
-        tgt_vocab=train_ds.tgt_vocab,
+        tgt_vocab=train_ds.tgt_vocab or {},
         tgt_pad=Multi30kDataset.PAD_IDX,
         tgt_sos=Multi30kDataset.SOS_IDX,
         tgt_eos=Multi30kDataset.EOS_IDX,
