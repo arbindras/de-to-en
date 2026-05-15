@@ -647,11 +647,11 @@ class Transformer(nn.Module):
         assert self.src_vocab is not None, "src_vocab must be set for inference"
         assert self.tgt_vocab is not None, "tgt_vocab must be set for inference"
         # assert self.src_tokenizer is not None, "src_tokenizer must be set for inference"
-
+        from re import findall
         if self.src_tokenizer is not None:
             tokens = [tok.text.lower() for tok in self.src_tokenizer(src_sentence)]
         else:
-            tokens = re.findall(r"\w+|[^\w\s]", src_sentence.lower())
+            tokens = findall(r"\w+|[^\w\s]", src_sentence.lower())
 
         self.eval()
         with torch.no_grad():
@@ -660,7 +660,7 @@ class Transformer(nn.Module):
             if self.src_tokenizer is not None:
                 tokens = [tok.text.lower() for tok in self.src_tokenizer(src_sentence)]
             else:
-                tokens = re.findall(r"\w+|[^\w\s]", src_sentence.lower())
+                tokens = findall(r"\w+|[^\w\s]", src_sentence.lower())
 
             pad_idx = self.src_vocab.get("<pad>", 1)
             sos_idx = self.src_vocab["<sos>"]
