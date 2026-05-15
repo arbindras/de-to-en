@@ -393,7 +393,14 @@ def train(args):
 
     # ── Final evaluation on test set ─────────────────────────────────
     print("\nLoading best checkpoint for final BLEU evaluation …")
-    model.load_state_dict(torch.load(args.checkpoint, map_location=device))
+    # model.load_state_dict(torch.load(args.checkpoint, map_location=device))
+
+    checkpoint = torch.load(args.checkpoint, map_location=device)
+
+    if "model_state" in checkpoint:
+        model.load_state_dict(checkpoint["model_state"])
+    else:
+        model.load_state_dict(checkpoint)
 
     test_bleu = evaluate_bleu(
         model, test_loader,

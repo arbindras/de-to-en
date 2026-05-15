@@ -506,7 +506,7 @@ class Transformer(nn.Module):
 
         if not os.path.exists(checkpoint_path):
 
-            FILE_ID = "1xKtXLc7CLpOaPVPurlce-xeajvIIUegh"
+            FILE_ID = "17T8YR7UwBHtB-KSE9gSFVZpw5eIUpUKX"
 
             url = f"https://drive.google.com/uc?id={FILE_ID}"
 
